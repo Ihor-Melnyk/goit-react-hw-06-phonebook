@@ -1,10 +1,15 @@
-import style from './Form.module.scss';
+import { nanoid } from 'nanoid';
 import { useState } from 'react';
-import PropTypes from 'prop-types';
+import { useDispatch, useSelector } from 'react-redux';
+import { addContacts } from '../../redux/itemsSlice';
+import style from './Form.module.scss';
 
-export default function ContactForm({ onSubmit }) {
+export default function ContactForm() {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
+
+  const contacts = useSelector(state => state.contacts.items);
+  const dispatch = useDispatch();
 
   const handleChange = e => {
     const { name, value } = e.target;
@@ -25,7 +30,23 @@ export default function ContactForm({ onSubmit }) {
 
   const handleSubmit = e => {
     e.preventDefault();
-    onSubmit(name, number);
+
+    const contact = {
+      id: nanoid(),
+      name: name,
+      number: number,
+    };
+
+    const normalizedName = contact.name.toLowerCase();
+    const checkedForName = contacts.find(
+      contact => normalizedName === contact.name.toLowerCase()
+    );
+
+    if (checkedForName) {
+      return alert(`${contact.name} is already in contacts`);
+    }
+
+    dispatch(addContacts(contact));
     reset();
   };
 
@@ -68,7 +89,3 @@ export default function ContactForm({ onSubmit }) {
     </form>
   );
 }
-
-ContactForm.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
-};
